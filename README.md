@@ -9,6 +9,6 @@ This application exposes two endpoints.
 * `/print-env`: Prints the environment variables of the process.
 * `/print-headers`: Prints the headers of the request.
 
-### Conifguration
+### Configuration
 
 * `REQUIRED_ROLES`: comma-separated list of roles that are granted to access the `/restricted` handler - default: `ADMIN,DEVELOPER`.
