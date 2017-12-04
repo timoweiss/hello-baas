@@ -1,0 +1,20 @@
+{
+  "name": "hello-baas",
+  "version": "1.0.0",
+  "description": "Minimal sample application for our BaaS solution Edit",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/timoweiss/hello-baas.git"
+  },
+  "private": true,
+  "author": "Timo Weiß",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/timoweiss/hello-baas/issues"
+  },
+  "homepage": "https://github.com/timoweiss/hello-baas#readme"
+}
