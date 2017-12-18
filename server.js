@@ -3,16 +3,18 @@ const port = 8080;
 
 const requiredRoles = process.env.REQUIRED_ROLES || 'ADMIN,DEVELOPER'
 
+const AUTH_HEADERFIELD = 'X-MWAY-BAAS-ROLES';
+
 const parsedRequiredRoles = requiredRoles.split(',').filter(r => !!r);
 
 console.log('Server will require the following roles:', parsedRequiredRoles.join(', '))
 
 const HANDLERS = {
   '/restricted': (request, response) => {
-    if (request.headers['X-Auth-User'] && parsedRequiredRoles.some(role => role === request.headers['X-Auth-User'])) {
+    if (request.headers[AUTH_HEADERFIELD] && parsedRequiredRoles.some(role => role === request.headers[AUTH_HEADERFIELD])) {
       return response.end(JSON.stringify({
         message: 'Hello, you are authenticated',
-        role: request.headers['X-Auth-User'],
+        role: request.headers[AUTH_HEADERFIELD],
       }));
     }
 
