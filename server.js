@@ -8,7 +8,7 @@ const AUTH_HEADERFIELD = 'X-MWAY-BAAS-ROLES';
 const parsedRequiredRoles = requiredRoles.split(',').filter(r => !!r);
 
 console.log('Server will require the following roles:', parsedRequiredRoles.join(', '))
-
+registerService();
 const HANDLERS = {
   '/restricted': (request, response) => {
     if (request.headers[AUTH_HEADERFIELD] && parsedRequiredRoles.some(role => role === request.headers[AUTH_HEADERFIELD])) {
@@ -43,6 +43,8 @@ const server = http.createServer((request, response) => {
   response.end(JSON.stringify({ message: response.statusMessage, code: response.statusCode }));
 })
 
+
+
 server.listen(port, (err) => {
   if (err) {
     console.log('Something bad happened', err);
@@ -51,3 +53,52 @@ server.listen(port, (err) => {
 
   console.log(`Server is listening on ${port}`);
 });
+
+function registerService() {
+  console.log('registering service', Object.keys(process.env).join(', '))
+  const options = {
+    host: process.env.BAAS_SERVER_NAME || 'localhost',
+    path: '/register',
+    port: process.env.BAAS_SERVER_PORT || 8081,
+    method: 'POST',
+  };
+
+  const payload = {
+    serviceName: process.env['BAAS_SERVICE_NAME'],
+    port,
+  };
+
+  const req = http.request(options, (res) => {
+
+    if (res.statusCode !== 200) {
+      console.log('Couldn\'t connect to BaaS-Application');
+      return;
+    }
+    let data;
+
+    res.on('data', (chunk) => {
+      data += chunk;
+    });
+
+    res.on('end', () => {
+      console.log('registering done')
+      // const responseData = JSON.parse(data);
+      // TODO: get the uuid and save it, no use case yet
+    });
+  });
+
+  req.on('error', (err) => {
+    const reqError = err;
+    console.log('Error while trying to reach BaaS-Application:');
+    if (reqError.code === 'ENOTFOUND') {
+      console.log('Couldn\'t reach Application at ' + options.host + options.path + ':' + options.port);
+    } else {
+      console.log(err);
+    }
+    // process.exit();   // if active will stop service after unsuccessful registration
+  });
+
+  req.write(JSON.stringify(payload));
+  req.end();
+
+}
