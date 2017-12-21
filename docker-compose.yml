@@ -1,7 +1,7 @@
 version: '3'
 name: HelloBaasStack
 services:
-  hello-baas:
+  hellobaas:
     image: timoweiss/hello-baas:latest
     ports:
       - "8080"
