@@ -3,7 +3,7 @@ const port = 8080;
 
 const requiredRoles = process.env.REQUIRED_ROLES || 'ADMIN,DEVELOPER'
 
-const AUTH_HEADERFIELD = 'X-MWAY-BAAS-ROLES';
+const AUTH_HEADERFIELD = 'X-MWAY-BAAS-ROLES'.toLowerCase();;
 
 const parsedRequiredRoles = requiredRoles.split(',').filter(r => !!r);
 
