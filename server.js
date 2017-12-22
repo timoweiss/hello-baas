@@ -4,6 +4,7 @@ const port = 8080;
 const requiredRoles = process.env.REQUIRED_ROLES || 'ADMIN,DEVELOPER'
 
 const AUTH_HEADERFIELD = 'X-MWAY-BAAS-ROLES'.toLowerCase();;
+const INTERNAL_SERVICE_NAME = 'com.example.helloBaaS';
 
 const parsedRequiredRoles = requiredRoles.split(',').filter(r => !!r);
 
@@ -11,7 +12,34 @@ console.log('Server will require the following roles:', parsedRequiredRoles.join
 registerService();
 const HANDLERS = {
   '/restricted': (request, response) => {
-    if (request.headers[AUTH_HEADERFIELD] && parsedRequiredRoles.some(role => role === request.headers[AUTH_HEADERFIELD])) {
+    /* Header is stringified object like:
+    { 
+      id: string,
+      username: string,
+      type: string, ('system' or 'ldap')
+      roles:[ 
+        { 
+          service: string,
+          roles: string[] 
+        },
+      ],
+    */
+    let authenticated = false;
+    if (request.headers[AUTH_HEADERFIELD]) {
+      const parsedHeader = JSON.parse(request.headers[AUTH_HEADERFIELD]);
+      const serviceRoleObject = parsedHeader.roles.find((element) => {
+        return element.service === INTERNAL_SERVICE_NAME;
+      });
+      if (serviceRoleObject) {
+        authenticated = serviceRoleObject.roles.some(
+          role => parsedRequiredRoles.some(
+            requiredRole => role === requiredRole
+          )
+        );
+      }
+    }
+    
+    if (authenticated) {
       return response.end(JSON.stringify({
         message: 'Hello, you are authenticated',
         role: request.headers[AUTH_HEADERFIELD],
@@ -65,6 +93,8 @@ function registerService() {
 
   const payload = {
     serviceName: process.env['BAAS_SERVICE_NAME'],
+    internalServiceName: INTERNAL_SERVICE_NAME,
+    availableRoles: parsedRequiredRoles,
     port,
   };
 
