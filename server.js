@@ -5,6 +5,7 @@ const requiredRoles = process.env.REQUIRED_ROLES || 'ADMIN,DEVELOPER'
 
 const AUTH_HEADERFIELD = 'X-MWAY-BAAS-ROLES'.toLowerCase();;
 const INTERNAL_SERVICE_NAME = 'com.example.helloBaaS';
+const PERMISSION_UUID = process.env['BAAS_PERMISSION_UUID'];
 
 const parsedRequiredRoles = requiredRoles.split(',').filter(r => !!r);
 
@@ -28,7 +29,7 @@ const HANDLERS = {
     if (request.headers[AUTH_HEADERFIELD]) {
       const parsedHeader = JSON.parse(request.headers[AUTH_HEADERFIELD]);
       const serviceRoleObject = parsedHeader.roles.find((element) => {
-        return element.service === INTERNAL_SERVICE_NAME;
+        return element.service === PERMISSION_UUID;
       });
       if (serviceRoleObject) {
         authenticated = serviceRoleObject.roles.some(
@@ -92,8 +93,7 @@ function registerService() {
   };
 
   const payload = {
-    serviceName: process.env['BAAS_SERVICE_NAME'],
-    internalServiceName: INTERNAL_SERVICE_NAME,
+    permissionUuid: PERMISSION_UUID,
     availableRoles: parsedRequiredRoles,
     port,
   };
@@ -102,6 +102,7 @@ function registerService() {
 
     if (res.statusCode !== 200) {
       console.log('Couldn\'t connect to BaaS-Application');
+      console.log({ payload });
       return;
     }
     let data;
@@ -127,7 +128,6 @@ function registerService() {
     }
     // process.exit();   // if active will stop service after unsuccessful registration
   });
-
   req.write(JSON.stringify(payload));
   req.end();
 
